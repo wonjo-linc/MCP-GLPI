@@ -26,12 +26,17 @@ app.set('trust proxy', true);
 app.use(cors());
 app.use(express.json());
 
-// OAuth 2.0 token storage
+// OAuth 2.0 storage
 const activeTokens = new Map<string, number>();
+const authCodes = new Map<string, { redirectUri: string; codeChallenge?: string; expiresAt: number }>();
+
 setInterval(() => {
   const now = Date.now();
   for (const [token, expiry] of activeTokens) {
     if (now > expiry) activeTokens.delete(token);
+  }
+  for (const [code, data] of authCodes) {
+    if (now > data.expiresAt) authCodes.delete(code);
   }
 }, 60000);
 
@@ -40,41 +45,86 @@ app.get('/.well-known/oauth-authorization-server', (req, res) => {
   const baseUrl = `${req.protocol}://${req.get('host')}`;
   res.json({
     issuer: baseUrl,
+    authorization_endpoint: `${baseUrl}/authorize`,
     token_endpoint: `${baseUrl}/oauth/token`,
     token_endpoint_auth_methods_supported: ['client_secret_post'],
-    grant_types_supported: ['client_credentials'],
-    response_types_supported: ['token'],
+    grant_types_supported: ['authorization_code', 'client_credentials'],
+    response_types_supported: ['code'],
+    code_challenge_methods_supported: ['S256'],
   });
 });
 
-// OAuth 2.0 token endpoint
-app.post('/oauth/token', (req, res) => {
-  const { grant_type, client_id, client_secret } = req.body;
+// OAuth 2.0 authorization endpoint
+app.get('/authorize', (req, res) => {
+  const { client_id, redirect_uri, state, code_challenge } = req.query as Record<string, string>;
 
-  if (grant_type !== 'client_credentials') {
-    res.status(400).json({ error: 'unsupported_grant_type' });
+  if (client_id !== OAUTH_CLIENT_ID) {
+    res.status(400).json({ error: 'invalid_client' });
     return;
   }
+
+  // Auto-approve: generate authorization code and redirect back
+  const code = randomUUID();
+  authCodes.set(code, {
+    redirectUri: redirect_uri,
+    codeChallenge: code_challenge,
+    expiresAt: Date.now() + 5 * 60 * 1000,
+  });
+
+  const redirectUrl = new URL(redirect_uri);
+  redirectUrl.searchParams.set('code', code);
+  if (state) redirectUrl.searchParams.set('state', state);
+  res.redirect(redirectUrl.toString());
+});
+
+// OAuth 2.0 token endpoint
+app.post('/oauth/token', express.urlencoded({ extended: false }), (req, res) => {
+  const { grant_type, client_id, client_secret, code, redirect_uri } = req.body;
 
   if (!OAUTH_CLIENT_ID || !OAUTH_CLIENT_SECRET) {
     res.status(500).json({ error: 'server_error' });
     return;
   }
 
-  if (client_id !== OAUTH_CLIENT_ID || client_secret !== OAUTH_CLIENT_SECRET) {
-    res.status(401).json({ error: 'invalid_client' });
+  if (grant_type === 'authorization_code') {
+    const authCode = authCodes.get(code);
+    if (!authCode || authCode.redirectUri !== redirect_uri) {
+      res.status(400).json({ error: 'invalid_grant' });
+      return;
+    }
+    authCodes.delete(code);
+
+    const token = randomUUID();
+    const expiresIn = 3600;
+    activeTokens.set(token, Date.now() + expiresIn * 1000);
+
+    res.json({
+      access_token: token,
+      token_type: 'Bearer',
+      expires_in: expiresIn,
+    });
     return;
   }
 
-  const token = randomUUID();
-  const expiresIn = 3600;
-  activeTokens.set(token, Date.now() + expiresIn * 1000);
+  if (grant_type === 'client_credentials') {
+    if (client_id !== OAUTH_CLIENT_ID || client_secret !== OAUTH_CLIENT_SECRET) {
+      res.status(401).json({ error: 'invalid_client' });
+      return;
+    }
 
-  res.json({
-    access_token: token,
-    token_type: 'Bearer',
-    expires_in: expiresIn,
-  });
+    const token = randomUUID();
+    const expiresIn = 3600;
+    activeTokens.set(token, Date.now() + expiresIn * 1000);
+
+    res.json({
+      access_token: token,
+      token_type: 'Bearer',
+      expires_in: expiresIn,
+    });
+    return;
+  }
+
+  res.status(400).json({ error: 'unsupported_grant_type' });
 });
 
 // Authentication middleware

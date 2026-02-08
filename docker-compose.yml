@@ -5,8 +5,11 @@ services:
     restart: unless-stopped
     ports:
       - "3100:3000"
-    env_file: .env
     environment:
+      - GLPI_URL=
+      - GLPI_APP_TOKEN=
+      - GLPI_USER_TOKEN=
+      - MCP_API_KEY=
       - PORT=3000
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]

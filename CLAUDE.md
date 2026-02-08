@@ -25,9 +25,8 @@
 모든 MCP 서버는 아래 구조를 따른다:
 - image: ghcr.io/wonjo-linc/mcp-{서비스명}:latest (Dockge용)
 - restart: unless-stopped
-- env_file: .env
+- environment: compose에서 직접 입력 (Dockge UI 활용)
 - ports: 호스트 포트 매핑 (서비스별 고유 포트)
-- .env.example 파일 필수 포함
 
 ## 프로젝트 구조
 src/

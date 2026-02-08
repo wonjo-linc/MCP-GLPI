@@ -3,6 +3,8 @@ services:
     build: .
     container_name: mcp-glpi
     restart: unless-stopped
+    ports:
+      - "3100:3000"
     env_file: .env
     environment:
       - PORT=3000
@@ -11,9 +13,3 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-    networks:
-      - proxy-network
-
-networks:
-  proxy-network:
-    external: true

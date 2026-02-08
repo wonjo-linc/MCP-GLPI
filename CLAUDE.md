@@ -18,13 +18,15 @@
 - 컨테이너 내부 포트: 3000 고정
 - 도메인 패턴: mcp-{서비스명}.lincsolution.net
 - Dockge 스택 경로: /opt/stacks/mcp-{서비스명}/
-- proxy-network (external) 네트워크 사용
+- GHCR 이미지: ghcr.io/wonjo-linc/mcp-{서비스명}:latest
+- NPM 프록시: Docker VM IP + 호스트 포트로 연결
 
 ## docker-compose.yml 템플릿
 모든 MCP 서버는 아래 구조를 따른다:
+- image: ghcr.io/wonjo-linc/mcp-{서비스명}:latest (Dockge용)
 - restart: unless-stopped
 - env_file: .env
-- networks: proxy-network (external: true)
+- ports: 호스트 포트 매핑 (서비스별 고유 포트)
 - .env.example 파일 필수 포함
 
 ## 프로젝트 구조

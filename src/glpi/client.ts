@@ -13,9 +13,11 @@ export class GlpiClient {
     this.api = axios.create({
       baseURL: `${this.baseUrl}/apirest.php`,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
         'App-Token': this.appToken,
       },
+      responseType: 'json',
+      responseEncoding: 'utf8',
     });
   }
 

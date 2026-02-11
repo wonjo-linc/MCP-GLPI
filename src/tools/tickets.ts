@@ -10,6 +10,7 @@ export function registerTicketTools(server: McpServer, glpi: GlpiClient) {
       range: z.string().optional().describe('Range of results, e.g. "0-9" for first 10'),
       order: z.enum(['ASC', 'DESC']).optional().describe('Sort order'),
     },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
     async (args) => {
       await glpi.initSession();
       try {
@@ -32,6 +33,7 @@ export function registerTicketTools(server: McpServer, glpi: GlpiClient) {
     {
       id: z.number().describe('The ticket ID'),
     },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
     async (args) => {
       await glpi.initSession();
       try {
@@ -55,6 +57,7 @@ export function registerTicketTools(server: McpServer, glpi: GlpiClient) {
       urgency: z.number().min(1).max(5).optional().describe('Urgency level (1-5)'),
       priority: z.number().min(1).max(6).optional().describe('Priority level (1-6)'),
     },
+    { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
     async (args) => {
       await glpi.initSession();
       try {
@@ -84,6 +87,7 @@ export function registerTicketTools(server: McpServer, glpi: GlpiClient) {
       status: z.number().min(1).max(6).optional().describe('Status (1=New, 2=Assigned, 3=Planned, 4=Pending, 5=Solved, 6=Closed)'),
       urgency: z.number().min(1).max(5).optional().describe('Urgency level (1-5)'),
     },
+    { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     async (args) => {
       const { id, ...updateData } = args;
       const filtered = Object.fromEntries(
@@ -108,6 +112,7 @@ export function registerTicketTools(server: McpServer, glpi: GlpiClient) {
     {
       query: z.string().describe('Search query string'),
     },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
     async (args) => {
       await glpi.initSession();
       try {

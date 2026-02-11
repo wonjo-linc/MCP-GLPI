@@ -13,6 +13,7 @@ export function registerAssetTools(server: McpServer, glpi: GlpiClient) {
       type: z.enum(assetTypes).describe('Type of asset to list'),
       range: z.string().optional().describe('Range of results, e.g. "0-9"'),
     },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
     async (args) => {
       await glpi.initSession();
       try {
@@ -35,6 +36,7 @@ export function registerAssetTools(server: McpServer, glpi: GlpiClient) {
       type: z.enum(assetTypes).describe('Type of asset'),
       id: z.number().describe('The asset ID'),
     },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
     async (args) => {
       await glpi.initSession();
       try {
@@ -55,6 +57,7 @@ export function registerAssetTools(server: McpServer, glpi: GlpiClient) {
       type: z.enum(assetTypes).describe('Type of asset to search'),
       query: z.string().describe('Search query string'),
     },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
     async (args) => {
       await glpi.initSession();
       try {

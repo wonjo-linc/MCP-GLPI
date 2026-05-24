@@ -10,6 +10,7 @@
     "dev": "tsx watch src/index.ts",
     "dev:remote": "tsx watch src/server.ts",
     "lint": "eslint src/",
+    "test": "npm run build && node scripts/validate-constants.cjs",
     "format": "prettier --write src/"
   },
   "keywords": [

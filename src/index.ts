@@ -2,7 +2,6 @@ import 'dotenv/config';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { GlpiClient } from './glpi/client';
-import { SERVER_NAME, SERVER_VERSION } from './constants';
 import { registerTicketTools } from './tools/tickets';
 import { registerAssetTools } from './tools/assets';
 
@@ -20,8 +19,8 @@ if (!GLPI_URL || !GLPI_APP_TOKEN || !GLPI_USER_TOKEN) {
 const glpi = new GlpiClient(GLPI_URL, GLPI_APP_TOKEN, GLPI_USER_TOKEN);
 
 const server = new McpServer({
-  name: SERVER_NAME,
-  version: SERVER_VERSION,
+  name: 'mcp-glpi',
+  version: '1.0.0',
 });
 
 registerTicketTools(server, glpi);

@@ -91,4 +91,5 @@ Additional scripts defined in `package.json`:
 ```sh
 npm run lint
 npm run format
+npm test
 ```
